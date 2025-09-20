@@ -19,8 +19,6 @@ drawings:
 transition: slide-left
 # enable MDC Syntax: https://sli.dev/features/mdc
 mdc: true
-# open graph
-lineNumbers: true
 ---
 
 # Iterators & Generators in EcmaScript
@@ -49,12 +47,10 @@ The last comment block of each slide will be treated as slide notes. It will be 
 <Toc text-sm minDepth="1" maxDepth="2" />
 
 ---
-layout: center
----
 
 # What is an iterator
 
-An iterator is any object that conforms to the Iterator protocol
+An iterator is any object that conforms to the <code>Iterator</code> protocol
 <v-switch>
 <template #1>
 ```typescript {*} twoslash
@@ -64,7 +60,7 @@ const iterator: Iterator<number> = {
 </template>
 <template #2>
 Let's fix it!
-```typescript {monaco-run}{height: '200px'}
+```typescript {monaco-run}{height: '150px'}
 const iterator: Iterator<number> = {
 };
 ```
@@ -72,8 +68,6 @@ const iterator: Iterator<number> = {
 </v-switch>
 
 
----
-layout: center
 ---
 
 # Okay but what can I do with an Iterator?
@@ -94,10 +88,10 @@ console.log(naturals.next());
 
 ---
 
-# Using an iterator in a for..of loop...
+# Using an <code>Iterator</code> in a for-of loop...
 <v-switch>
 <template #1>
-...is not possible
+...is not possible...
 ```typescript {8} twoslash
 const naturals = {
   current: 0,
@@ -115,7 +109,7 @@ for (const n of naturals) {
 ```
 </template>
 <template #2>
-Let's fix it!
+...because an <code>Iterable</code> is required, let's fix it:
 ```typescript {monaco-run}
 const naturals = {
   current: 0,
@@ -134,17 +128,12 @@ for (const n of naturals) {
 </template>
 </v-switch>
 
-
 ---
-layout: two-cols-header
 transition: slide-up
-layoutClass: gap-16
 ---
 
 # There's an easier way to define iterable iterators: generators!
-
-::left::
-This:
+````md magic-move
 ```typescript
 const naturals = {
   current: 0,
@@ -156,11 +145,6 @@ const naturals = {
   }
 }
 ```
-
-::right::
-
-<v-click>
-Can be simplified to:
 ```typescript
 function* naturals() {
   let current = 0;
@@ -169,13 +153,41 @@ function* naturals() {
   }
 }
 ```
-</v-click>
-<v-click>
-And then calling:
-```typescript
-naturals()
+````
+
+---
+
+# More <code>Iterable</code> tricks
+
+<v-switch>
+<template #1>
+You can destructure an <code>Iterable</code>:
+```ts {monaco-run} {autorun:false}
+function* naturals() {
+  let current = 0;
+  while (true) {
+    yield current++;
+  }
+}
+
+const [a, b, c] = naturals();
+console.log(a, b, c);
 ```
-</v-click>
+</template>
+<template #2>
+You can spread an <code>Iterable</code>:
+```ts {monaco-run} {autorun:false}
+function* upTo5() {
+  let current = 0;
+  while (current <= 5) {
+    yield current++;
+  }
+}
+
+console.log(...upTo5());
+```
+</template>
+</v-switch>
 
 ---
 
@@ -183,6 +195,7 @@ naturals()
 
 <v-switch>
 <template #1>
+<code>return</code> for cleanup and dispose. Once called, the iterator will always be done.
 ```typescript {monaco-run} {autorun:false}
 function* naturals() {
   let current = 0;
@@ -192,11 +205,14 @@ function* naturals() {
   return 42;
 }
 
-console.log(naturals().return(3));
+const it = naturals();
+console.log(it.return(3));
+console.log(it.next());
 ```
 </template>
 
 <template #2>
+<code>throw</code> to make it error
 ```typescript {monaco-run} {autorun:false}
 function* naturals() {
   let current = 0;
@@ -210,7 +226,7 @@ console.log(naturals().throw(new Error('boom')));
 </template>
 
 <template #3>
-Any iterator can implement these optional methods too:
+Any <code>Iterator</code> can implement these optional methods too:
 ```typescript {monaco-run} {autorun:false}
 const answer: Iterator<number> = {
   next() {
@@ -244,12 +260,12 @@ Available as baseline newly available.
 </v-click>
 <v-clicks>
 
-* [Chromium 122](https://developer.chrome.com/blog/chrome-122-beta?hl=en#iterator_helpers) (20/02/2024)
-* [Firefox 131](https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Releases/131#javascript) (01/10/2024)
-* [Safari 18.4](https://webkit.org/blog/16574/webkit-features-in-safari-18-4/#javascript) (31/03/2025)
-* [Node.js 22](https://nodejs.org/en/blog/announcements/v22-release-announce#v8-update-to-124) (24/04/2024)
-* [Deno 1.42](https://deno.com/blog/v1.42#v8-123-and-typescript-543) (28/03/2024)
-* [Bun 1.1.31](https://bun.com/blog/bun-v1.1.31#iterator-helpers) (18/10/2024)
+* 20/02/2024 [Chromium 122](https://developer.chrome.com/blog/chrome-122-beta?hl=en#iterator_helpers)
+* 28/03/2024 [Deno 1.42](https://deno.com/blog/v1.42#v8-123-and-typescript-543)
+* 24/04/2024 [Node.js 22](https://nodejs.org/en/blog/announcements/v22-release-announce#v8-update-to-124)
+* 01/10/2024 [Firefox 131](https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Releases/131#javascript)
+* 18/10/2024 [Bun 1.1.31](https://bun.com/blog/bun-v1.1.31#iterator-helpers)
+* 31/03/2025 [Safari 18.4](https://webkit.org/blog/16574/webkit-features-in-safari-18-4/#javascript)
 
 </v-clicks>
 
@@ -260,20 +276,25 @@ layoutClass: gap-16
 
 # Iterator helpers
 
+```typescript {none|1}
+Iterator.from(object)
+```
+<v-click>Returns an iterator by calling [Symbol.iterator]() on the object.</v-click>
+
 ::left::
 ## Lazy methods
-```typescript {none|1|2|3|4|5|none}
+```typescript {none|1|1-2|1-3|1-4|all}
 map(mapper: (value: T) => U)
 filter(predicate: (value: T) => boolean)
 take(limit: number)
 drop(limit: number)
-flatMap(mapper: (values: Iterator<T>) => U)
+flatMap(mapper: (value: T) => Iterator<U>)
 ```
-<v-click>These methods are lazy and will only execute their function argument when a value is pulled from the iterator.</v-click>
+<v-click>These methods will only execute their function argument when a value is pulled from the iterator. They all return an iterator when called.</v-click>
 
 ::right::
 ## Final methods
-```typescript {none|1|2|3|4|5|6|none}
+```typescript {none|1|1-2|1-3|1-4|1-5|all}
 reduce<T, U>(reducer: (acc: U, value: T) => U, init?: U): U
 toArray(): T[]
 forEach(consumer: (value: T) => void): void
@@ -281,7 +302,42 @@ some(predicate: (value: T) => boolean): boolean
 every(predicate: (value: T) => boolean): boolean
 find(predicate: (value: T) => boolean): T | undefined
 ```
-<v-click>These methods will consume the iterator.</v-click>
+<v-click>These methods will consume the iterator and return a value that is usually not an iterator.</v-click>
+
+---
+layout: two-cols-header
+layoutClass: gap-16
+---
+
+# Comparing iterating on an <code>Array</code>
+
+::left::
+
+With <code>Array</code> methods
+```typescript {monaco-run}
+const array = [1,2,3,4,5,6,7,8,9,10];
+const res = array.map(x => 2*x)
+        .filter(x => x % 3 !== 0)
+        .map(x => 5*x)
+        .flatMap(x => [x - 1, x]);
+console.log(...res)
+```
+<v-click>Every method call will iterate on the array and return a new array.</v-click>
+
+::right::
+
+With Iterator helpers
+```typescript {monaco-run}
+const array = [1,2,3,4,5,6,7,8,9,10];
+const res = array.values()
+     .map(x => 2*x)
+     .filter(x => x % 3 !== 0)
+     .map(x => 5*x)
+     .flatMap(function* gen(x) { yield x - 1; yield x; });
+console.log(...res);
+```
+<v-click>Lazy methods </v-click>
+
 
 
 ---
@@ -704,7 +760,7 @@ Learn more: [Mermaid Diagrams](https://sli.dev/features/mermaid) and [PlantUML D
 ---
 foo: bar
 dragPos:
-  square: -101,0,0,0
+  square: 0,-30,0,0
 ---
 
 # Draggable Elements
@@ -730,7 +786,7 @@ Double-click on the draggable elements to edit their positions.
 </v-drag>
 ```
 
-<v-drag pos="663,206,261,_,-15">
+<v-drag pos="2,186,977,_">
   <div text-center text-3xl border border-main rounded>
     Double-click me!
   </div>
@@ -744,7 +800,7 @@ Double-click on the draggable elements to edit their positions.
 <v-drag-arrow two-way />
 ```
 
-<v-drag-arrow pos="67,452,253,46" two-way op70 />
+<v-drag-arrow pos="979,-5,-981,552" two-way op70 />
 
 ---
 src: ./pages/imported-slides.md
