@@ -55,11 +55,21 @@ layout: center
 # What is an iterator
 
 An iterator is any object that conforms to the Iterator protocol
-```typescript {monaco-run}
+<v-switch>
+<template #1>
+```typescript {*} twoslash
 const iterator: Iterator<number> = {
-}
+};
 ```
-<v-click>It may be finite or not.</v-click>
+</template>
+<template #2>
+Let's fix it!
+```typescript {monaco-run}{height: '200px'}
+const iterator: Iterator<number> = {
+};
+```
+</template>
+</v-switch>
 
 
 ---
@@ -84,7 +94,28 @@ console.log(naturals.next());
 
 ---
 
-# Using an iterator in a for..of loop
+# Using an iterator in a for..of loop...
+<v-switch>
+<template #1>
+...is not possible
+```typescript {8} twoslash
+const naturals = {
+  current: 0,
+  next() {
+    return { done: false, value: this.current++ };
+  },
+}
+
+for (const n of naturals) {
+  if (n >= 5) {
+    break;
+  }
+  console.log(n)
+}
+```
+</template>
+<template #2>
+Let's fix it!
 ```typescript {monaco-run}
 const naturals = {
   current: 0,
@@ -100,7 +131,8 @@ for (const n of naturals) {
   console.log(n)
 }
 ```
-<v-click>This can be called an iterable iterator.</v-click>
+</template>
+</v-switch>
 
 
 ---
@@ -112,7 +144,7 @@ layoutClass: gap-16
 # There's an easier way to define iterable iterators: generators!
 
 ::left::
-
+This:
 ```typescript
 const naturals = {
   current: 0,
@@ -137,6 +169,8 @@ function* naturals() {
   }
 }
 ```
+</v-click>
+<v-click>
 And then calling:
 ```typescript
 naturals()
@@ -198,27 +232,48 @@ console.log(answer.throw?.(new Error('kaboom')));
 </v-switch>
 
 ---
+
+# Iterator helpers
+
+New methods exposed on all sync iterators.
+
+<v-click>
+Available as baseline newly available.
+
+![](/baseline-2025.png)
+</v-click>
+<v-clicks>
+
+* [Chromium 122](https://developer.chrome.com/blog/chrome-122-beta?hl=en#iterator_helpers) (20/02/2024)
+* [Firefox 131](https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Releases/131#javascript) (01/10/2024)
+* [Safari 18.4](https://webkit.org/blog/16574/webkit-features-in-safari-18-4/#javascript) (31/03/2025)
+* [Node.js 22](https://nodejs.org/en/blog/announcements/v22-release-announce#v8-update-to-124) (24/04/2024)
+* [Deno 1.42](https://deno.com/blog/v1.42#v8-123-and-typescript-543) (28/03/2024)
+* [Bun 1.1.31](https://bun.com/blog/bun-v1.1.31#iterator-helpers) (18/10/2024)
+
+</v-clicks>
+
+---
 layout: two-cols-header
 layoutClass: gap-16
 ---
 
 # Iterator helpers
 
-New methods exposed on all sync iterators
-
 ::left::
 ## Lazy methods
-```typescript
+```typescript {none|1|2|3|4|5|none}
 map(mapper: (value: T) => U)
 filter(predicate: (value: T) => boolean)
 take(limit: number)
 drop(limit: number)
-flatMap()
+flatMap(mapper: (values: Iterator<T>) => U)
 ```
+<v-click>These methods are lazy and will only execute their function argument when a value is pulled from the iterator.</v-click>
 
 ::right::
 ## Final methods
-```typescript
+```typescript {none|1|2|3|4|5|6|none}
 reduce<T, U>(reducer: (acc: U, value: T) => U, init?: U): U
 toArray(): T[]
 forEach(consumer: (value: T) => void): void
@@ -226,6 +281,7 @@ some(predicate: (value: T) => boolean): boolean
 every(predicate: (value: T) => boolean): boolean
 find(predicate: (value: T) => boolean): T | undefined
 ```
+<v-click>These methods will consume the iterator.</v-click>
 
 
 ---
