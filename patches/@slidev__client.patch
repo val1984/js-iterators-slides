@@ -1,0 +1,25 @@
+diff --git a/setup/code-runners.ts b/setup/code-runners.ts
+index 063abb97210c378c57feadbe8426fcd0cb02ad80..5790a10c70d6982d0b887ccd6711103787648786 100644
+--- a/setup/code-runners.ts
++++ b/setup/code-runners.ts
+@@ -164,7 +164,7 @@ export async function runTypeScript(code: string) {
+   code = tsModule.transpileModule(code, {
+     compilerOptions: {
+       module: tsModule.ModuleKind.ESNext,
+-      target: tsModule.ScriptTarget.ES2022,
++      target: tsModule.ScriptTarget.ESNext,
+     },
+     transformers: {
+       after: [transformImports],
+diff --git a/setup/monaco.ts b/setup/monaco.ts
+index a9447f2d49de682e4c290753b2cb73a3d2bead66..1a3d343e1ea47a309752dd92e076a40f58a438ed 100644
+--- a/setup/monaco.ts
++++ b/setup/monaco.ts
+@@ -60,6 +60,7 @@ const setup = createSingletonPromise(async () => {
+     strict: true,
+     moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+     module: monaco.languages.typescript.ModuleKind.ESNext,
++    target: monaco.languages.typescript.ScriptTarget.ESNext,
+   })
+ 
+   const ata = configs.monacoTypesSource === 'cdn'
