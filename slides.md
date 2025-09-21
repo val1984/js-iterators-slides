@@ -132,7 +132,7 @@ for (const n of naturals) {
 transition: slide-up
 ---
 
-# There's an easier way to define iterable iterators: generators!
+# There's an easier way to define iterable iterators: generator functions!
 ````md magic-move
 ```typescript
 const naturals = {
@@ -327,7 +327,7 @@ console.log(...res)
 ::right::
 
 With Iterator helpers
-```typescript {monaco-run}
+```js {monaco-run}
 const array = [1,2,3,4,5,6,7,8,9,10];
 const res = array.values()
      .map(x => 2*x)
@@ -336,9 +336,124 @@ const res = array.values()
      .flatMap(function* gen(x) { yield x - 1; yield x; });
 console.log(...res);
 ```
-<v-click>Only one loop, no memory allocation and it only happens on the last line! </v-click>
+<v-click>Only one loop, it only happens on the last line and no memory allocation!</v-click>
+
+---
+
+# Iterator helpers are nice but we can do more
+
+```typescript {monaco-run}
+function* naturals() { let current = 0; while (true) { yield current++ } }
+
+function* zipMap<T1, T2, U>(mapper: (a: T1, b: T2) => U, it1: Iterator<T1>, it2: Iterator<T2>) {
+  while (true) {
+    const cur1 = it1.next();
+    const cur2 = it2.next();
+    if (cur1.done || cur2.done) { return; }
+    yield mapper(cur1.value, cur2.value);
+  }
+}
+
+console.log(...zipMap((a, b) => `${a} is before ${b}`, naturals().take(5), naturals().drop(1)));
+```
+
+---
+
+# Let's write a chunking function
+
+<v-switch>
+<template #1>
+```typescript {monaco-run} {autorun:false}
+function* naturals() { let current = 0; while (true) { yield current++ } }
+
+function* chunks<T>(iterable: Iterable<T>, size: number) {
+  const iterator = Iterator.from(iterable);
+  
+  while (true) {
+    yield iterator.take(size);
+  }
+}
+
+console.log(...chunks(naturals(), 3).map(it => it.toArray()).take(5));
+```
+</template>
+<template #2>
+```typescript {monaco-run} {autorun:false}
+function* naturals() { let current = 0; while (true) { yield current++ } }
+
+function* chunks<T>(iterable: Iterable<T>, size: number) {
+  const iterator = Iterator.from(iterable);
+  
+  while (true) {
+    yield chunked(iterator, size);
+  }
+}
+
+function* chunked<T>(iterator: Iterator<T>, size: number) {
+  for (let i = 0; i < size; i++) {
+    const { done, value } = iterator.next();
+    if (done) { return }
+    yield value;
+  }
+}
+
+console.log(...chunks(naturals().take(15), 3).map(it => it.toArray()).take(10));
+```
+</template>
+<template #3>
+```typescript {monaco-run} {autorun:false}
+function* naturals() { let current = 0; while (true) { yield current++ } }
+
+function* chunks<T>(iterable: Iterable<T>, size: number) {
+  const iterator = Iterator.from(iterable);
+  
+  while (true) {
+    const { value, done } = iterator.next();
+    if (done) { return; }
+    yield chunked(iterator, value, size - 1)
+  }
+}
+
+function* chunked<T>(iterator: Iterator<T>, value: T, size: number) {
+  yield value;
+  for (let i = 0; i < size; i++) {
+    const { done, value } = iterator.next();
+    if (done) { return }
+    yield value;
+  }
+}
+
+console.log(...chunks(naturals().take(15), 3).map(it => it.toArray()).take(10));
+```
+</template>
+</v-switch>
+
+---
+
+# Turns out <code>Iterator</code>s are trickier than they look
+
+<v-clicks>
+
+- No way to differentiate between finish and empty
+- No way to know if the iterator is finished without consuming a value
+- <code>take</code> & <code>drop</code> will close the underlying iterator
+- No built-in cloning feature to alleviate closing
+- Edge cases are numerous...
+- ...and infinite loops too!
+
+</v-clicks>
+
+---
+
+# My recommendations
+
+<v-clicks>
+
+- Heavily test your code that plays with iterators
+- Be aware of the numerous quirks
 
 
+</v-clicks>
 
 ---
 layout: image-right
