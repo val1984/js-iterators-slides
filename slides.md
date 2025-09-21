@@ -159,10 +159,8 @@ function* naturals() {
 
 # More <code>Iterable</code> tricks
 
-<v-switch>
-<template #1>
 You can destructure an <code>Iterable</code>:
-```ts {monaco-run} {autorun:false}
+```ts {monaco-run} {showOutputAt:'+1'}
 function* naturals() {
   let current = 0;
   while (true) {
@@ -173,10 +171,13 @@ function* naturals() {
 const [a, b, c] = naturals();
 console.log(a, b, c);
 ```
-</template>
-<template #2>
+
+---
+
+# More <code>Iterable</code> tricks
+
 You can spread an <code>Iterable</code>:
-```ts {monaco-run} {autorun:false}
+```ts {monaco-run} {showOutputAt:'0'}
 function* upTo5() {
   let current = 0;
   while (current <= 5) {
@@ -186,8 +187,7 @@ function* upTo5() {
 
 console.log(...upTo5());
 ```
-</template>
-</v-switch>
+<v-click at="+2">Beware that spreading an infinite iterator will never complete!</v-click>
 
 ---
 
@@ -336,7 +336,7 @@ const res = array.values()
      .flatMap(function* gen(x) { yield x - 1; yield x; });
 console.log(...res);
 ```
-<v-click>Lazy methods </v-click>
+<v-click>Only one loop, no memory allocation and it only happens on the last line! </v-click>
 
 
 
